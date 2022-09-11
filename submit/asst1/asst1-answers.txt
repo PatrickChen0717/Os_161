@@ -1,0 +1,176 @@
+commit 6e4beae1459a4606115a2e08263386394d39f211 (HEAD -> master, tag: asst1-start, origin/master)
+asst1-start
+
+Question 1: In the book chapters and in class you were introduced to the mechanisms used to transfer control between user processes and the operating system. 
+            Tell us where we can find the first line of OS/161 code that is executed when a trap occurs. Then tell us where control gets transferred to from that point. What about an interrupt? 
+            How does that differ?
+
+    When a trap occurs: 
+    trap.c  - line 216
+    The control is transfered to vm_fault(int faulttype, vaddr_t faultaddress) in dumbvm.c for handle each individual faulttype.
+
+    When an interrupt occurs: 
+    trap.c  - line 153
+    The control is transfered to mainbus_interrupt(struct trapframe *tf) in lamebus_machdep.c
+
+    Differences:
+    Traps are synchronous process that OS give control to the trap handler.
+    Whereas, interrupts are asynchronous process that let CPU triggers some handler routines, such as interprocessor_interrupt(void), hardclock(void), etc.
+
+
+Question 2: Making a system call, such as write, ultimately leads to a trap. Find the code in OS/161 that invokes system calls from user programs and causes traps. In which file and on which lines did you find this code?
+
+
+
+
+
+
+
+
+Question 3: Why do you suppose there are libc functions in the "common" part of the source tree (common/libc) as well as in userland/lib/libc?
+            Below is a brief overview of the organization of the source tree, and a description of what goes where.
+            configure -- top-level configuration script; configures the OS/161 distribution and build system. It does not configure the operating system kernel, which is a slightly different kind of configuration.
+
+
+
+
+
+
+
+Question 4: Name two things that configure configures. What might invalidate that configuration and make you need/want to rerun it?
+            Makefile -- top-level makefile; builds the OS/161 distribution, including all the provided utilities, but does not build the operating system kernel.
+            common/ -- code used both by the kernel and user-level programs, mostly standard C library functions.
+            kern/ -- the kernel source code.
+            kern/Makefile -- Once again, there is a Makefile. This Makefile installs header files but does not build anything.
+            kern/arch/ -- This is where architecture-specific code goes. By architecture-specific, we mean the code that differs depending on the hardware platform on which you're running. There are two directories here: mips which contains code specific to the MIPS processor and sys161 which contains code specific to the System/161 simulator.
+            kern/arch/mips/conf/conf.arch -- This tells the kernel config script where to find the machine-specific, low-level functions it needs (throughout kern/arch/mips/*).
+            kern/arch/mips/include/ -- This folder and its subdirectories include files for the machine-specific constants and functions.
+
+
+
+
+
+
+
+
+
+
+
+
+Question 5: What are some of the details which would make a function "machine dependent"? Why might it be important to maintain this separation, instead of just putting all of the code in one function?
+            kern/arch/mips/* -- The other directories contain source files for the machine-dependent code that the kernel needs to run. A lot of this code is in assembler and will seem very low level, but understanding how it all fits together will help you immensely on Assignment 2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Question 6: How large is a trapframe? Why?
+            kern/arch/sys161/conf/conf.arch -- Similar to mips/conf/conf.arch.
+            kern/arch/sys161/include -- These files are include files for the System161-specific hardware, constants, and functions. machine-specific constants and functions.
+            kern/compile -- This is where you build kernels. See below.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Question 7: Under what circumstances should you re-run the kern/conf/config script?
+
+
+
+
+
+
+
+
+
+
+
+
+Question 8: Under what circumstances should you run bmake depend in kern/compile/DUMBVM?
+
+
+
+
+
+
+
+
+Question 9: Under what circumstances should you run bmake or bmake install in kern/compile/DUMBVM?
+            kern/dev -- This is where all the low level device management code is stored. Unless you are really interested, you can safely ignore most of this directory.
+            kern/fs -- This is where the actual file system implementations go. The subdirectory sfs contains a simple default file system. You will augment this file system as part of Assignment 4, so we'll ask you more questions about it then. The subdirectory semfs contains a special-purpose file system that provides semaphores to user-level programs. We may ask you more questions about this later on, after we discuss in class what semaphores are.
+            kern/include -- These are the include files that the kernel needs. The kern subdirectory contains include files that are visible not only to the operating system itself, but also to user-level programs. (Think about why it's named "kern" and where the files end up when installed.)
+            kern/lib -- These are library routines used throughout the kernel, e.g., arrays, kernel printf, etc. Note: You can use these data structures as you implement your assignments in CS161. We strongly encourage you to look around and see what we've provided for you.
+            kern/main -- This is where the kernel is initialized and where the kernel main function is implemented.
+
+
+
+
+
+
+
+
+
+
+
+Question 10: When you booted your kernel, you found that there were several commands that you could issue to experiment with it. Explain exactly where and what you would have to do to add a command that printed out, "Hello world!"
+            kern/proc -- This is where process support lives. You will write most of the code that goes here during Assignments 4 and 5.
+            kern/synchprobs -- This is the directory that contains/will contain the framework code that you will need to complete assignment 1. You can safely ignore it for now.
+            kern/syscall -- This is where you will add code to create and manage user level processes. As it stands now, OS/161 runs only kernel threads; there is no support for user level code. In Assignments 4 and 5, you'll implement this support.
+            kern/thread -- Threads are the fundamental abstraction on which the kernel is built (do not forget to look back at header files!)
+            kern/vfs -- The vfs is the "virtual file system." It is an abstraction for a file system and its existence in the kernel allows you to implement multiple file systems, while sharing as much code as possible. The VFS layer is the file-system independent layer. You will want to go look atvfs.h and vnode.h before looking at this directory.
+            kern/vm -- This directory is fairly vacant. In Assignments 6 and 7, you'll implement virtual memory and most of your code will go in here.
+            man/ -- the OS/161 manual ("man pages") appear here. The man pages document (or specify) every program, every function in the C library, and every system call. You will use the system call man pages for reference in the course of assignment 2. The man pages are HTML and can be read with any browser.
+            mk/ -- fragments of makefiles used to build the system.
+            userland/ -- user-level libraries and program code
+            userland/bin/ -- all the utilities that are typically found in /bin, e.g., cat, cp, ls, etc. The things in bin are considered "fundamental" utilities that the system needs to run.
+
+
+
+
+
+
+
+
+
+Question 11: Why do we need to include these in your OS/161 distribution? Why can't you just use the standard utilities that are present on the machine on which you're working?
+            userland/include/ -- these are the include files that you would typically find in /usr/include (in our case, a subset of them). These are user level include files; not kernel include files.
+            userland/lib/ -- library code lives here. We have only two libraries: libc, the C standard library, and hostcompat, which is for recompiling OS/161 programs for the host UNIX system. There is also a crt0 directory, which contains the startup code for user programs.
+
+
+
+
+
+
+
+
+
+Question 12: When a user program exits, what is done with the program's return value?
+        userland/sbin/ -- this is the source code for the utilities typically found in /sbin on a typical UNIX installation. In our case, there are some utilities that let you halt the machine, power it off and reboot it, among other things.
+        userland/testbin/ -- this is the source code for the test programs found in /testbin in the installed OS/161 tree. You will want to examine this directory closely and be aware of what's available here, as many of these test programs will be useful during the course of the semester.
+        Now that you've perused the source tree, here is the last question.
+
+
+
+
+
+
+
+
+
+Question 13: Imagine that you wanted to add a new system call. List all the places that you would need to modify/add code. Then review your answers to questions 7-9 and note which of those actions you need to take in order to test the new system call.  
