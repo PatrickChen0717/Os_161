@@ -1,6 +1,17 @@
 Git log command output:
+    commit dc130fd38d6f4c715aac0cef81dfbee8b04c9581 (HEAD -> master, tag: asst1-submit, origin/master)
+    Author: Patrick Chen <patric18@student.ubc.ca>
+    Date:   Mon Sep 19 19:20:57 2022 -0700
 
-    commit bc4bebac7aec65bfb5c10f79b55c71dc1b6f54d2 (HEAD -> master, origin/master)
+        Asst1-done
+
+    commit dc130fd38d6f4c715aac0cef81dfbee8b04c9581 (HEAD -> master)
+    Author: Patrick Chen <patric18@student.ubc.ca>
+    Date:   Mon Sep 19 19:20:57 2022 -0700
+
+        Asst1-done
+
+    commit bc4bebac7aec65bfb5c10f79b55c71dc1b6f54d2 (origin/master)
     Author: Patrick Chen <patric18@ece.ubc.ca>
     Date:   Sat Sep 10 19:31:03 2022 -0700
 
@@ -15,6 +26,7 @@ Git log command output:
 Git tag command output:
 
     asst1-start
+    asst1-submit
 
 ================================================================================================
 OS/161 base system version 1.99.08
@@ -168,7 +180,8 @@ Question 12: When a user program exits, what is done with the program's return v
 
     On successful return, zero in a3 register; return value in v0.
     On error return, nonzero in a3 register; errno value in v0.
-
+    The value will then be moved to s0 for callee-save.
+    It is also moved to a0 so it's the argument to exit.
 
 Question 13: Imagine that you wanted to add a new system call. List all the places that you would need to modify/add code. Then review your answers to questions 7-9 and note which of those actions you need to take in order to test the new system call.
 
@@ -310,10 +323,11 @@ Question 22: Print the allcpus array before the boot() function is executed. Pas
 
         Breakpoint 1, boot () at ../../main/main.c:99
         99              kprintf("\n");
-        (gdb) p allcpus
+        (gdb) cpuarray allcpus
+        0 cpus
 
     Answer:
-    {arr = {v = 0x0, num = 0, max = 0}}
+    0 cpus
 
 Question 23: Print again the same array after the boot() function is executed. Paste the output.  
     Command:
@@ -343,8 +357,33 @@ Question 23: Print again the same array after the boot() function is executed. P
         (gdb) n
         kmain (arguments=0x80035ca0 "") at ../../main/main.c:213
         213             menu(arguments);
-        (gdb) p allcpus
-        $2 = {arr = {v = 0x80039fe0, num = 1, max = 4}}
+        (gdb) cpuarray allcpus
+        1 cpus
+        cpu 0:
+        $1 = {c_self = 0x8003af00, c_number = 0, c_hardware_number = 0, c_curthread = 0x8003bf80, c_zombies = {tl_head = {tln_prev = 0x0, tln_next = 0x8003af1c, 
+            tln_self = 0x0}, tl_tail = {tln_prev = 0x8003af10, tln_next = 0x0, tln_self = 0x0}, tl_count = 0}, c_hardclocks = 1, c_spinlocks = 0, c_isidle = false, 
+        c_runqueue = {tl_head = {tln_prev = 0x0, tln_next = 0x8003af44, tln_self = 0x0}, tl_tail = {tln_prev = 0x8003af38, tln_next = 0x0, tln_self = 0x0}, 
+            tl_count = 0}, c_runqueue_lock = {splk_lock = 0, splk_holder = 0x0}, c_ipi_pending = 0, c_shootdown = {{ts_placeholder = 0} <repeats 16 times>}, 
+        c_numshootdown = 0, c_ipi_lock = {splk_lock = 0, splk_holder = 0x0}}
 
     Answer:
-    {arr = {v = 0x80039fe0, num = 1, max = 4}}
+    {c_self = 0x8003af00, c_number = 0, c_hardware_number = 0, c_curthread = 0x8003bf80, c_zombies = {tl_head = {tln_prev = 0x0, tln_next = 0x8003af1c, 
+            tln_self = 0x0}, tl_tail = {tln_prev = 0x8003af10, tln_next = 0x0, tln_self = 0x0}, tl_count = 0}, c_hardclocks = 1, c_spinlocks = 0, c_isidle = false, 
+        c_runqueue = {tl_head = {tln_prev = 0x0, tln_next = 0x8003af44, tln_self = 0x0}, tl_tail = {tln_prev = 0x8003af38, tln_next = 0x0, tln_self = 0x0}, 
+            tl_count = 0}, c_runqueue_lock = {splk_lock = 0, splk_holder = 0x0}, c_ipi_pending = 0, c_shootdown = {{ts_placeholder = 0} <repeats 16 times>}, 
+        c_numshootdown = 0, c_ipi_lock = {splk_lock = 0, splk_holder = 0x0}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
