@@ -1,4 +1,10 @@
 Git log command output:
+    commit d13da1f1f2358a3c73a8b62a3f024e1b205a6d83 (HEAD -> master)
+    Author: Patrick Chen <patric18@student.ubc.ca>
+    Date:   Mon Sep 19 22:55:37 2022 -0700
+
+        Asst1-done
+        
     commit dc130fd38d6f4c715aac0cef81dfbee8b04c9581 (HEAD -> master, tag: asst1-submit, origin/master)
     Author: Patrick Chen <patric18@student.ubc.ca>
     Date:   Mon Sep 19 19:20:57 2022 -0700
