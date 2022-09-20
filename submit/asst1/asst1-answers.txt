@@ -204,14 +204,18 @@ Question 15: What is the very first assembly instruction that executes?
 
 Question 16: Set the breakpoints in the kernel function that shows the menu and in the kernel main function. Now tell GDB to display all the breakpoints that were set and copy the output to your submit file. 
     Command:
-        (gdb) b showmenu
-        Breakpoint 1 at 0x800143e4: file ../../main/menu.c, line 425.
-        (gdb) b main.c:213
-        Breakpoint 2 at 0x800139ec: file ../../main/main.c, line 213.
+        (gdb) b kmain
+        Breakpoint 1 at 0x800139e4: file ../../main/main.c, line 211.
+        (gdb) b menu
+        Breakpoint 2 at 0x80014a50: file ../../main/menu.c, line 709.
+        (gdb) info b
+        Num     Type           Disp Enb Address    What
+        1       breakpoint     keep y   0x800139e4 in kmain at ../../main/main.c:211
+        2       breakpoint     keep y   0x80014a50 in menu at ../../main/menu.c:709
 
     Answer:
-    1       breakpoint     keep y   0x800143e4 in showmenu at ../../main/menu.c:425
-    2       breakpoint     keep y   0x800139ec in kmain at ../../main/main.c:213
+    1       breakpoint     keep y   0x800139e4 in kmain at ../../main/main.c:211
+    2       breakpoint     keep y   0x80014a50 in menu at ../../main/menu.c:709
 
 Question 17: Briefly describe what happens between the beginning of the execution and the invocation of the kernel main function. 
 
