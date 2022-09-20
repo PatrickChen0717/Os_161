@@ -267,6 +267,16 @@ cmd_quit(int nargs, char **args)
 	return 0;
 }
 
+
+static
+int
+cmd_helloworld(int nargs, char **args)
+{
+	(void)nargs;
+	(void)args;
+	kprintf("Hello world!\n");
+	return 0;
+}
 /*
  * Command for mounting a filesystem.
  */
@@ -443,6 +453,7 @@ static const char *opsmenu[] = {
 	"[sync]    Sync filesystems          ",
 	"[panic]   Intentional panic         ",
 	"[q]       Quit and shut down        ",
+	"[HW]      Print hello world		 ",
 	NULL
 };
 
@@ -549,6 +560,7 @@ static struct {
 	{ "q",		cmd_quit },
 	{ "exit",	cmd_quit },
 	{ "halt",	cmd_quit },
+	{ "HW",		cmd_helloworld},
 
 	/* stats */
 	{ "kh",         cmd_kheapstats },
