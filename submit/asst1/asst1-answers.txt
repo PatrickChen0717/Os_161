@@ -125,7 +125,7 @@ Question 7: Under what circumstances should you re-run the kern/conf/config scri
 
 Question 8: Under what circumstances should you run bmake depend in kern/compile/DUMBVM?
 
-    If a new library is included in any of the files
+    If a new library is included in any of the files or when a new header file is included in the kern source file
 
 Question 9: Under what circumstances should you run bmake or bmake install in kern/compile/DUMBVM?
             kern/dev -- This is where all the low level device management code is stored. Unless you are really interested, you can safely ignore most of this directory.
