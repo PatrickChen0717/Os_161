@@ -32,6 +32,7 @@
 
     wchan_wakeone() will take a thread from the wait channel threadlist, wchan_threads, and make it runable using thread_make_runnable().
     wchan_wakeall() will wake up all the threads in wait channel. It will continue grab the next thread if there are still remains in the threadlist and make them runnable using thread_make_runnable().
+    thread_make_runnable() will take thread from targetcpu->c_runqueue.
     thread_make_runnable() function will make the thread ready to run by changing the state of that thread into S_READY.
     Sleeping thread should keep sleeping until it being waked up.
 
@@ -70,7 +71,7 @@
 10.How does the implementation of wchan ensure that a thread never misses a wakeup signal: that another thread cannot attempt to awaken the first thread just as it is preparing to sleep, but before it is actually placed into the sleep queue?
 
     Because wchan_sleep() and wchan_wakeone()/wchan_wakeall() are synchronized using the same lock, semaphore sem_lock.
-    This will ensure that the two functions will not execute concurrently.
+    This will ensure that the two functions will not execute on wc_chan concurrently.
     When a wchan_sleep() is executing, it makes sure it holds the lock before running thread_switch(s_sleep).
     When a wchan_wake()/wchan_wakeall() is executing, it also makes sure it holds the lock before running thread_make_runnable().
 

@@ -147,13 +147,13 @@ lock_create(const char *name)
 
         lock = kmalloc(sizeof(struct lock));
         if (lock == NULL) 
-		{
+	{
                 return NULL;
         }
 
         lock->lk_name = kstrdup(name);
         if (lock->lk_name == NULL) 
-		{
+	{
                 kfree(lock);
                 return NULL;
         }
@@ -306,8 +306,11 @@ cv_wait(struct cv *cv, struct lock *lock)
 
         //Ensure atomic exection on wchan
         spinlock_acquire(&cv->lk);
+
+	//Ensure atomic acquire on cv->lk
         lock_release(lock);
         
+	//suspend current thread
         wchan_sleep(cv->cv_wc_chan, &cv->lk);     
 
 	//release lock aquired for wchan_sleep
