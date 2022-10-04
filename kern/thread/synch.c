@@ -203,8 +203,9 @@ lock_acquire(struct lock *lock)
 	KASSERT(lock->status == false);
 
     //Hold the lock, set status
-    lock->status = true;
     lock->holder = curthread;
+    lock->status = true;
+    
 
     spinlock_release(&lock->lk);
         
@@ -222,12 +223,12 @@ lock_release(struct lock *lock)
 	
         	spinlock_acquire(&lock->lk);
 
-        	//Set the lock state to released
-		lock->status = false;
-		lock->holder = NULL;
-
             	//Wake up one sleeping thread 
             	wchan_wakeone(lock->wc_chan, &lock->lk);
+
+		//Set the lock state to released
+		lock->status = false;
+		lock->holder = NULL;
 
             	spinlock_release(&lock->lk);
 	}
