@@ -59,6 +59,7 @@ struct spinlock {
 	struct cpu *splk_holder;	    /* CPU holding this lock. */
 };
 
+
 /*
  * Initializer for cases where a spinlock needs to be static or global.
  */

@@ -30,6 +30,12 @@
 #ifndef _SYNCH_H_
 #define _SYNCH_H_
 
+#define IPL_NONE   0
+#define IPL_HIGH   1
+
+#define true 1
+#define false 0
+
 /*
  * Header file for synchronization primitives.
  */
@@ -73,9 +79,11 @@ void V(struct semaphore *);
  * (should be) made internally.
  */
 struct lock {
-        char *lk_name;
-        // add what you need here
-        // (don't forget to mark things volatile as needed)
+        char *lk_name;          /*lock name*/
+        volatile bool status;   /*indication of whether spinlock has been acquired*/
+        struct spinlock lk;     /*lock spinlock*/
+        struct thread *holder;  /*lock holder thread*/
+        struct wchan *wc_chan;  /*lock wait channel*/
 };
 
 struct lock *lock_create(const char *name);
@@ -112,9 +120,9 @@ bool lock_do_i_hold(struct lock *);
  */
 
 struct cv {
-        char *cv_name;
-        // add what you need here
-        // (don't forget to mark things volatile as needed)
+        char *cv_name;          /*cv name*/
+        struct spinlock lk;     /*cv spinlock*/
+        struct wchan *cv_wc_chan; /* list of waiting threads */
 };
 
 struct cv *cv_create(const char *name);

@@ -1,0 +1,78 @@
+1.What happens to a thread when it exits (i.e., calls thread_exit())? What about when it sleeps?
+    
+    When exits, thread_exit() function will be called.
+    Detach it from current process by removing it from threadarray. 
+    Check the magic number on the bottom end of the stack to make sure stack overflow does not happen.
+    Turn off all interrupt.
+    Use thread_switch() to switch the current thread state into zombie state.
+
+    When sleep, wchan_sleep() will be called.
+    Inside the function, it will enter case S_SLEEP using thread_switch().
+    Then the thread will be placed in wait channel threadlist, wc_threads.
+
+
+2.What function(s) handle(s) a context switch?
+
+    thread_switch()
+
+3.What does it mean for a thread to be in each of the possible thread states?
+
+    S_RUN: the thread is currently running
+    S_READY: the thread is ready to run, but not yet running
+    S_SLEEP: the thread is sleeping, and is queued on the wait channel
+    S_ZOMBIE: the thread has exited and waiting to be cleaned up
+
+4.What does it mean to turn interrupts off? How is this accomplished? Why is it important to turn off interrupts in the thread subsystem code?
+
+    It means that context switch will not happen during the execution of current thread.
+    It is accomplished by code splhigh(), which set priority level to high.
+    This can promiss atomic exection and prevent the execution of other threads and deadlock the current thread.
+
+5.What happens when a thread wakes up another thread? How does a sleeping thread get to run again?
+
+    wchan_wakeone() will take a thread from the wait channel threadlist, wchan_threads, and make it runable using thread_make_runnable().
+    wchan_wakeall() will wake up all the threads in wait channel. It will continue grab the next thread if there are still remains in the threadlist and make them runnable using thread_make_runnable().
+    thread_make_runnable() function will make the head thread ready to run by changing the state of that thread into S_READY.
+    Sleeping thread should keep sleeping until it being waked up.
+
+6.What function(s) choose(s) the next thread to run?
+
+    threadlist_remhead() in thread_switch()
+
+7.How does it (do they) pick the next thread?
+
+    In the threadlist_remhead(), it will take the next thread queue in threadlist curcpu->c_runqueue using tl->tl_head.tln_next and return.
+    The return thread is the next thread to run.
+    It will then remove that thread from curcpu->c_runqueue. If curcpu->c_runqueue is empty, it will return null.
+
+8.What role does the hardware timer play in scheduling? What hardware independent function is called on a timer interrupt?
+
+    Schedule() is periodically called by hardclock().
+    When there is a timer interrupt, hardclock() will be called to reshuffled the runqueue.
+    Then, at the end of the function, thread_yield() will be called.
+    This will force a context switch using thread_yield().
+    
+
+9.Describe how wchan_sleep() and wchan_wakeone() are used to implement semaphores.
+
+    When semaphore sem_count = 0, it means that the semaphore has already reached the maximum threads that can be run concurrently.
+    All threads that try to process later on will enter s_sleep state by wchan_sleep() function in P function.
+    These threads will be stored on a wait channel list (runqueue), wchan_threads.
+
+    If any one of the previously running threads finish exection and exit, the semaphore sem_count will increment.
+    (one running thread exit will increment sem_count by one.)
+    And then trigger wchan_wakeone() in V function to wake up a thread on the runqueue, wchan_threads, by changing its state to s_ready.
+    When that thread will decrement semaphore sem_count and start running.
+    When sem_count reaches back to 0, all of the threads that come in later on will queue up with previously sleeping threads together on wchan_threads until any of the current running thread finishes.
+
+
+10.How does the implementation of wchan ensure that a thread never misses a wakeup signal: that another thread cannot attempt to awaken the first thread just as it is preparing to sleep, but before it is actually placed into the sleep queue?
+
+    Because wchan_sleep() and wchan_wakeone()/wchan_wakeall() are synchronized using the same lock, semaphore sem_lock.
+    This will ensure that the two functions will not execute concurrently.
+    When a wchan_sleep() is executing, it makes sure it holds the lock before running thread_switch(s_sleep).
+    When a wchan_wake()/wchan_wakeall() is executing, it also makes sure it holds the lock before running thread_make_runnable().
+
+    Hence, when wchan_sleep is putting a thread into s_sleep state, wchan_wakeone will not be waking any threads at the same time.
+    And when wchan_wakeone is waking a thread, there will not be any wchan_sleep be placing any thread into the sleep queue at the same time.
+    So that the threads will never miss a wakeup signal.
