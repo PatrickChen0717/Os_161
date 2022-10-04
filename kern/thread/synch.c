@@ -175,9 +175,10 @@ lock_destroy(struct lock *lock)
         KASSERT(lock != NULL);
 
         //Garbage collect spinlock and wait channel
-	    spinlock_cleanup(&lock->lk);
-	    wchan_destroy(lock->wc_chan);
+	spinlock_cleanup(&lock->lk);
+	wchan_destroy(lock->wc_chan);
 
+	//clean up
         kfree(lock->lk_name);
         kfree(lock);
 }
@@ -191,8 +192,8 @@ lock_acquire(struct lock *lock)
 	retry:
         //Check if lk is aquired
         if(lock->status == true 
-		   && lock->holder != NULL)
-		{
+	   && lock->holder != NULL)
+	{
             //Suspend current thread
             wchan_sleep(lock->wc_chan, &lock->lk); 
             goto retry; 
@@ -212,42 +213,42 @@ lock_acquire(struct lock *lock)
 void
 lock_release(struct lock *lock)
 {
-		KASSERT(lock != NULL);
+	KASSERT(lock != NULL);
 
         //Check if curthread is the holder
-		if (lock->status == true 
-			&& lock->holder == curthread)
-		{
+	if (lock->status == true 
+	    && lock->holder == curthread)
+	{
 	
-            spinlock_acquire(&lock->lk);
+        	spinlock_acquire(&lock->lk);
 
-            //Set the lock state to released
-       		lock->status = false;
-			lock->holder = NULL;
+        	//Set the lock state to released
+		lock->status = false;
+		lock->holder = NULL;
 
-            //Wake up one sleeping thread 
-            wchan_wakeone(lock->wc_chan, &lock->lk);
+            	//Wake up one sleeping thread 
+            	wchan_wakeone(lock->wc_chan, &lock->lk);
 
-            spinlock_release(&lock->lk);
-		}
+            	spinlock_release(&lock->lk);
+	}
 
 }
 
 bool
 lock_do_i_hold(struct lock *lock)
 {
-		KASSERT(lock != NULL);
+	KASSERT(lock != NULL);
 
-		//Check curthread is the lock holder 
+	//Check curthread is the lock holder 
         if(lock->holder == curthread 
-			&& lock->status == true)
-		{
+	   && lock->status == true)
+	{
 
             //holded by curcpu
             return true;
         }
 			
-	    return false;
+	return false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -262,13 +263,13 @@ cv_create(const char *name)
 
         cv = kmalloc(sizeof(struct cv));
         if (cv == NULL) 
-		{
-                return NULL;
+	{
+        	return NULL;
         }
 
         cv->cv_name = kstrdup(name);
         if (cv->cv_name==NULL) 
-		{
+	{
                 kfree(cv);
                 return NULL;
         }
@@ -286,10 +287,10 @@ cv_destroy(struct cv *cv)
         KASSERT(cv != NULL);
 
         //Garbage collect the spinlock and wait channel
-	    spinlock_cleanup(&cv->lk);
-	    wchan_destroy(cv->cv_wc_chan);
+	spinlock_cleanup(&cv->lk);
+	wchan_destroy(cv->cv_wc_chan);
 
-		//clean up
+	//clean up
         kfree(cv->cv_name);
         kfree(cv);
 }
@@ -300,7 +301,7 @@ cv_destroy(struct cv *cv)
 void
 cv_wait(struct cv *cv, struct lock *lock)
 {
-		KASSERT(cv != NULL);
+	KASSERT(cv != NULL);
 
         //Ensure atomic exection on wchan
         spinlock_acquire(&cv->lk);
@@ -308,7 +309,7 @@ cv_wait(struct cv *cv, struct lock *lock)
         
         wchan_sleep(cv->cv_wc_chan, &cv->lk);     
 
-		//release lock aquired for wchan_sleep
+	//release lock aquired for wchan_sleep
         spinlock_release(&cv->lk); 
         lock_acquire(lock);
         
@@ -320,9 +321,9 @@ cv_wait(struct cv *cv, struct lock *lock)
 void
 cv_signal(struct cv *cv, struct lock *lock)
 {
-		KASSERT(cv != NULL);
-		KASSERT(lock -> holder == curthread);
-		
+	KASSERT(lock -> holder == curthread);
+	KASSERT(cv != NULL);
+
         //ensure atomic exection on wchan
         spinlock_acquire(&cv->lk);
 
@@ -330,7 +331,6 @@ cv_signal(struct cv *cv, struct lock *lock)
         wchan_wakeone(cv->cv_wc_chan, &cv->lk);
         spinlock_release(&cv->lk);
 
-        (void)lock;
 }
 
 /*
@@ -339,15 +339,15 @@ cv_signal(struct cv *cv, struct lock *lock)
 void
 cv_broadcast(struct cv *cv, struct lock *lock)
 {
-	KASSERT(cv != NULL);
 	KASSERT(lock -> holder == curthread);
+	KASSERT(cv != NULL);
+	
+    	//Ensure atomic exection on wchan
+    	spinlock_acquire(&cv->lk);
 
-    //Ensure atomic exection on wchan
-    spinlock_acquire(&cv->lk);
+    	//Wake all sleeping threads
+    	wchan_wakeall(cv->cv_wc_chan, &cv->lk);
+    	spinlock_release(&cv->lk);
 
-    //Wake all sleeping threads
-    wchan_wakeall(cv->cv_wc_chan, &cv->lk);
-    spinlock_release(&cv->lk);
 
-	(void)lock;
 }
