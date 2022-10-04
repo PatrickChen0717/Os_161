@@ -32,7 +32,7 @@
 
     wchan_wakeone() will take a thread from the wait channel threadlist, wchan_threads, and make it runable using thread_make_runnable().
     wchan_wakeall() will wake up all the threads in wait channel. It will continue grab the next thread if there are still remains in the threadlist and make them runnable using thread_make_runnable().
-    thread_make_runnable() function will make the head thread ready to run by changing the state of that thread into S_READY.
+    thread_make_runnable() function will make the thread ready to run by changing the state of that thread into S_READY.
     Sleeping thread should keep sleeping until it being waked up.
 
 6.What function(s) choose(s) the next thread to run?
