@@ -55,9 +55,10 @@
 
 9.Describe how wchan_sleep() and wchan_wakeone() are used to implement semaphores.
 
-    When semaphore sem_count = 0, it means that the semaphore has already reached the maximum threads that can be run concurrently.
+    In function P, when semaphore sem_count = 0, it means that the semaphore has already reached the maximum threads that can be run concurrently.
     All threads that try to process later on will enter s_sleep state by wchan_sleep() function in P function.
     These threads will be stored on a wait channel list (runqueue), wchan_threads.
+    When semaphore sem_count is greater than 0, wchan_sleep() 
 
     If any one of the previously running threads finish exection and exit, the semaphore sem_count will increment.
     (one running thread exit will increment sem_count by one.)
