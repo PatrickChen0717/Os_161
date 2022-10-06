@@ -41,6 +41,10 @@
 #include <sfs.h>
 #include <syscall.h>
 #include <test.h>
+<<<<<<< HEAD
+=======
+#include "opt-synchprobs.h"
+>>>>>>> instructor/synchprobs
 #include "opt-sfs.h"
 #include "opt-net.h"
 
@@ -115,6 +119,14 @@ common_prog(int nargs, char **args)
 	struct proc *proc;
 	int result;
 
+<<<<<<< HEAD
+=======
+#if OPT_SYNCHPROBS
+	kprintf("Warning: this probably won't work with a "
+		"synchronization-problems kernel.\n");
+#endif
+
+>>>>>>> instructor/synchprobs
 	/* Create a process for the new program to run in. */
 	proc = proc_create_runprogram(args[0] /* name */);
 	if (proc == NULL) {
@@ -267,6 +279,7 @@ cmd_quit(int nargs, char **args)
 	return 0;
 }
 
+<<<<<<< HEAD
 
 static
 int
@@ -277,6 +290,8 @@ cmd_helloworld(int nargs, char **args)
 	kprintf("Hello world!\n");
 	return 0;
 }
+=======
+>>>>>>> instructor/synchprobs
 /*
  * Command for mounting a filesystem.
  */
@@ -453,7 +468,10 @@ static const char *opsmenu[] = {
 	"[sync]    Sync filesystems          ",
 	"[panic]   Intentional panic         ",
 	"[q]       Quit and shut down        ",
+<<<<<<< HEAD
 	"[HW]      Print hello world		 ",
+=======
+>>>>>>> instructor/synchprobs
 	NULL
 };
 
@@ -513,6 +531,12 @@ cmd_testmenu(int n, char **a)
 static const char *mainmenu[] = {
 	"[?o] Operations menu                ",
 	"[?t] Tests menu                     ",
+<<<<<<< HEAD
+=======
+#if OPT_SYNCHPROBS
+	"[sp1] Air Balloon                   ",
+#endif
+>>>>>>> instructor/synchprobs
 	"[kh] Kernel heap stats              ",
 	"[khgen] Next kernel heap generation ",
 	"[khdump] Dump kernel heap           ",
@@ -560,7 +584,15 @@ static struct {
 	{ "q",		cmd_quit },
 	{ "exit",	cmd_quit },
 	{ "halt",	cmd_quit },
+<<<<<<< HEAD
 	{ "HW",		cmd_helloworld},
+=======
+
+#if OPT_SYNCHPROBS
+	/* in-kernel synchronization problem(s) */
+	{ "sp1",	airballoon },
+#endif
+>>>>>>> instructor/synchprobs
 
 	/* stats */
 	{ "kh",         cmd_kheapstats },

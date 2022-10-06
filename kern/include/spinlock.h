@@ -59,7 +59,10 @@ struct spinlock {
 	struct cpu *splk_holder;	    /* CPU holding this lock. */
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> instructor/synchprobs
 /*
  * Initializer for cases where a spinlock needs to be static or global.
  */
