@@ -126,6 +126,7 @@ dandelion(void *p, unsigned long arg)
 	//Attempt to cut rope when the Cutted rope != NROPES
 	while(true)
 	{
+		//start exection condition, wait for balloon set up finish
 		if(balloon_status == true)
 		{
 			/*Exit condition
@@ -214,6 +215,7 @@ marigold(void *p, unsigned long arg)
 	//Attempt to cut rope when the Cutted rope != NROPES
 	while(true)
 	{
+		//start exection condition, wait for balloon set up finish
 		if(balloon_status == true)
 		{
 			/*Exit condition
@@ -321,8 +323,8 @@ flowerkiller(void *p, unsigned long arg)
 			break;
 		}
 		lock_release(Cutted_rope_lk);
-
-		//Attempt swap ropes when the Cutted rope != NROPES
+		
+		//start exection condition, wait for balloon set up finish
 		if(balloon_status == true)
 		{
 			//Randomly select two index for swap
@@ -336,7 +338,7 @@ flowerkiller(void *p, unsigned long arg)
 				&& stake_array[stake_index2].status == 1 
 				&& stake_index1 != stake_index2)
 			{
-				//Prevent Dead lock
+				//Prevent Dead lock by always acquiring the smaller lock
 				if(temphook1<temphook2){ 
 					lock_acquire(hook_array[temphook2].hook_lk);
 					lock_acquire(hook_array[temphook1].hook_lk);
