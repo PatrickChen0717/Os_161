@@ -18,7 +18,17 @@ static int thread_count; 			/*Number of thread currently running*/
 static int thread_sleep;			/*Number of thread sleeping in CV*/
 static bool balloon_status = false; /*Indicator of balloon set up*/
 
-/* Data structures for rope mappings */
+/* Data structures for rope mappings 
+ *
+ * Hook: Structure that hold the stake number it's attaching and hold the lock used for 
+ * 		synchronize that rope. It also holds an indicator for tracking whether the rope has been cut.
+ * Stack: Structure that hold a variable hook it's attaching to and an indicator 
+ * 		for tracking whether the rope has been cut.
+ * 
+ * hook_array: Array holds all hook structures. 
+ * stake_array: Array holds all stake structures. 
+ * 
+ */
 struct hook
 {
 	int stake; 				/*the stake rope is attaching to*/
@@ -96,7 +106,8 @@ struct cv *Thread_cv;			/*Sleep queue of all threads ready to exit*/
  * 	Marigold and Dandelion when they cut a rope.
  *  Cutted_rope is constantly checked by all thread using while(true) 
  * 	loops and the loops will break if the condition holds
- * 
+ *  Upon exit, threads will queue in CV and wait for the main thread to 
+ *  broadcast exit
  */
 
 /*
@@ -181,6 +192,8 @@ dandelion(void *p, unsigned long arg)
 	thread_sleep ++;
 	kprintf("Dandelion thread done\n");
 	cv_wait(Thread_cv, Thread_lk);
+
+	//thread going to exit, decrement counter
 	thread_count --;
 	lock_release(Thread_lk);
 
@@ -278,6 +291,8 @@ marigold(void *p, unsigned long arg)
 	thread_sleep ++;
 	kprintf("Marigold thread done\n");
 	cv_wait(Thread_cv, Thread_lk);
+
+	//thread going to exit, decrement counter
 	thread_count --;
 	lock_release(Thread_lk);
 
@@ -423,6 +438,8 @@ flowerkiller(void *p, unsigned long arg)
 	thread_sleep ++;
 	cv_wait(Thread_cv, Thread_lk);
 	kprintf("Lord FlowerKiller thread done\n");
+
+	//thread going to exit, decrement counter
 	thread_count --;
 	lock_release(Thread_lk);
 
@@ -472,6 +489,8 @@ balloon(void *p, unsigned long arg)
 	thread_sleep ++;
 	cv_wait(Thread_cv, Thread_lk);
 	kprintf("Balloon thread done\n");
+
+	//thread going to exit, decrement counter
 	thread_count --;
 	lock_release(Thread_lk);
 
@@ -509,6 +528,7 @@ airballoon(int nargs, char **args)
 	balloon_status = false;
 	lock_release(Cutted_rope_lk);
 
+	//Set up the initial value of thread_sleep and thread_count
 	lock_acquire(Thread_lk);
 	thread_sleep = 0;
 	thread_count = 1;
