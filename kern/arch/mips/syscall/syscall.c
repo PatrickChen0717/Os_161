@@ -36,7 +36,6 @@
 #include <current.h>
 #include <syscall.h>
 
-
 /*
  * System call dispatcher.
  *
@@ -110,6 +109,9 @@ syscall(struct trapframe *tf)
 		break;
 
 	    /* Add stuff here */
+		// case SYS_open:
+		// err = sys_open((userptr_t)tf->tf_v0, tf->tf_v1);
+		// break;
 
 	    default:
 		kprintf("Unknown syscall %d\n", callno);

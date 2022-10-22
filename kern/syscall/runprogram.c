@@ -44,6 +44,7 @@
 #include <vfs.h>
 #include <syscall.h>
 #include <test.h>
+#include <filetable.h>
 
 /*
  * Load program "progname" and start running it in usermode.
@@ -73,6 +74,10 @@ runprogram(char *progname)
 	if (as == NULL) {
 		vfs_close(v);
 		return ENOMEM;
+	}
+
+	if (curproc->p_ft == NULL) {
+		curproc->p_ft = filetable_create();
 	}
 
 	/* Switch to it and activate it. */
