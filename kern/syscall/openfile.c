@@ -4,34 +4,33 @@
 #include <openfile.h>
 #include <synch.h>
 #include <vfs.h>
-
+#include <kern/errno.h>
 
 
 struct openfile*
-open_make(struct vnode* node,int open_mode){
+openfile_make(struct vnode* node,int open_mode){ 
 
-    struct openfile* new_open;
-    new_open=(struct openfile*)kmalloc(sizeof(struct openfile));
-    if(new_open==NULL){
+    struct openfile* new_file;
+    new_file=(struct openfile*)kmalloc(sizeof(struct openfile));
+    if(new_file==NULL){
         return NULL;
     }
-    new_open->lock_file=lock_create("");
-    if(new_open->lock_file==NULL){
-        kfree(new_open);
+    new_file->lock_file=lock_create("");
+    if(new_file->lock_file==NULL){
+        kfree(new_file);
         return NULL;
     }
-    new_open->ref_count=1;
-    new_open->flag=open_mode;
-    new_open->offset=0;
-    new_open->v_file=node;
+    new_file->ref_count=1;
+    new_file->flag=open_mode;
+    new_file->offset=0;
+    new_file->v_file=node;
 
-    return new_open;
+    return new_file;
 }
 
 void
 file_delete(struct openfile* file){
     KASSERT(file!=NULL);
-    lock_release(file->lock_file);
     lock_destroy(file->lock_file);
     kfree(file);
 };
@@ -49,6 +48,7 @@ count_decrea(struct openfile* file_name){
 
     lock_acquire(file_name->lock_file);
     if(file_name->ref_count==1){
+        lock_release(file_name->lock_file);
         file_delete(file_name);
     }
     else{
@@ -59,17 +59,21 @@ count_decrea(struct openfile* file_name){
 }
 
 int
-open_new(char * path,int open_mode,mode_t mode,struct openfile **ret_file){
+open_new_file(char * path,int open_mode,mode_t mode,struct openfile **ret_file){
 
     struct vnode*node;
     struct openfile*file;
-    int flag;
-    flag=vfs_open(path,open_mode,mode,&(node));
-    if(flag==1){
-        return 1;// open the vnode failed
+    int err;
+    err=vfs_open(path,open_mode,mode,&(node));
+    if(err){
+        return err;// open the vnode failed
     }
 
-    file=open_make(node,open_mode);
+    file=openfile_make(node,open_mode);
+    if(file==NULL){
+        vfs_close(node);
+        return ENOMEM;
+    }
     *ret_file=file;
 
     return 0;

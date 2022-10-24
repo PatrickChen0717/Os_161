@@ -15,7 +15,6 @@ filetable_create (void){
     struct openfile* stdout;
     struct openfile* stderr;
     char copy[32];
-    strcpy(copy,"con:");
 
     struct filetable *ft;
     ft = (struct filetable*)kmalloc(sizeof(struct filetable));
@@ -23,7 +22,7 @@ filetable_create (void){
         return NULL;
     }
 
-    for(int i=0;i<OPEN_MAX;i++){
+    for(int i=0;i<OPEN_MAX;i++){  //initialized the all the entries of new filetable to be null 
         ft->table[i] = NULL;
     }
 
@@ -32,17 +31,29 @@ filetable_create (void){
         kfree(ft);
         return NULL;
     }
+    
+    /*set up the stdin,stdout,and stderr*/
+    //Add stdin into filetable index 0
+    strcpy(copy,"con:");
+    result1 = open_new_file(copy, O_RDONLY, 0664, &stdin);  
+    if(result1){
+        kprintf("stdin: error\n");
+        return NULL;
+    }
 
-    result1 = open_new(copy, O_RDONLY, 0664, &stdin);
-    if(result1==1){
+    //Add stdout into filetable index 1
+    strcpy(copy,"con:");
+    result2 = open_new_file(copy, O_WRONLY, 0664, &stdout);
+    if(result2){
+        kprintf("stdout: error\n");
         return NULL;
     }
-    result2 = open_new(copy, O_WRONLY, 0664, &stdout);
-        if(result2==1){
-        return NULL;
-    }
-    result3 = open_new(copy, O_WRONLY, 0664, &stderr);
-        if(result3==1){
+
+    //Add stderr into filetable index 2
+    strcpy(copy,"con:");
+    result3 = open_new_file(copy, O_WRONLY, 0664, &stderr);
+    if(result3){
+        kprintf("stderr: error\n");
         return NULL;
     }
 
@@ -64,30 +75,35 @@ filetable_delete(struct filetable *table_to_delete){
     lock_destroy(table_to_delete->lock);
     kfree(table_to_delete);
 }
-
+/*Return the new add integer number which is greater than 2 
+ *and less than or euqal the OPEN_MAX-1,if the return value
+ *is -1,which means the current filtable is full and we can
+ *not add new files to the filetable at this point.  
+ */
 int
 filetable_add (struct filetable *ft, struct openfile *file){
     for(int i=3;i<OPEN_MAX;i++){
         if(ft->table[i] == NULL){
             ft->table[i] = file;
-            //return index, file is successfully added
             return i;
         }
     }
-     //return -1 for add file is not successful
+
     return -1;
 }
 
 
 int
-filetable_remove (struct filetable *ft, int index){
+filetable_remove (struct filetable *ft, int index,struct openfile **file){
+
     if(ft->table[index] != NULL){
+        *file=ft->table[index];
         ft->table[index] = NULL;
 
         //return 1, removal is success
-        return 1;
+        return 0;
     }
 
     //return 0 for no file to remove
-    return 0;
+    return 1;
 }

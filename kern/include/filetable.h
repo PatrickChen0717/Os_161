@@ -22,6 +22,7 @@ void filetable_delete (struct filetable *table_to_delete);
 
 int filetable_add (struct filetable *ft, struct openfile *file);
 
-int filetable_remove (struct filetable *ft, int index);
+int filetable_remove (struct filetable *ft, int index,struct openfile **file);
+
 
 #endif /*_FILETABLE_H_*/

@@ -16,7 +16,7 @@ struct openfile{
 
 };
 
-struct openfile* open_make(struct vnode *,int mode );
+struct openfile* openfile_make(struct vnode *,int mode );
 
 void count_inc(struct openfile* );
 
@@ -24,7 +24,6 @@ void file_delete(struct openfile*);
 
 void count_decrea(struct openfile *);
 
-int open_new(char* path,int open_mode ,mode_t mode,struct openfile**);
-
+int open_new_file(char* path,int open_mode ,mode_t mode,struct openfile**);
 
 #endif /*_OPENFILE_H_*/

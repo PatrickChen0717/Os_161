@@ -35,6 +35,8 @@
 #include <thread.h>
 #include <current.h>
 #include <syscall.h>
+#include <copyinout.h>
+#include <endian.h>
 
 /*
  * System call dispatcher.
@@ -80,6 +82,10 @@ syscall(struct trapframe *tf)
 	int callno;
 	int32_t retval;
 	int err;
+	uint64_t conc;
+	int32_t whence;
+	off_t retval_offset;
+
 
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
@@ -108,10 +114,44 @@ syscall(struct trapframe *tf)
 				 (userptr_t)tf->tf_a1);
 		break;
 
-	    /* Add stuff here */
-		// case SYS_open:
-		// err = sys_open((userptr_t)tf->tf_v0, tf->tf_v1);
-		// break;
+		/* Add stuff here */
+		case SYS_open:
+		err = sys_open((userptr_t)tf->tf_a0,tf->tf_a1,tf->tf_a2,&retval);
+		break;
+
+		case SYS_close:
+		err= sys_close(tf->tf_a0);
+		break;
+
+		case SYS_read:
+		err = sys_read(tf->tf_a0, (userptr_t)tf->tf_a1, tf->tf_a2,&retval);
+		break;
+
+		case SYS_write:
+		err = sys_write(tf->tf_a0, (userptr_t)tf->tf_a1, tf->tf_a2,&retval);
+		break;
+		
+		case SYS_lseek:
+		join32to64(tf->tf_a2,tf->tf_a3,&conc);
+		err=copyin((userptr_t)tf->tf_sp+16,&whence,sizeof(int));
+		if(err==1){
+			break;
+		}
+		err =sys_lseek(tf->tf_a0, conc, whence, &retval_offset);
+		split64to32(retval_offset,&tf->tf_v0,&tf->tf_v1);
+		retval=tf->tf_v0;
+		break;
+
+		case SYS_chdir:
+		err = sys_chdir((userptr_t)tf->tf_a0);
+		break;
+
+		case SYS___getcwd:
+		err = sys__getcwd((userptr_t)tf->tf_a0,tf->tf_a1,&retval);
+		break;
+		case SYS_dup2:
+		err= sys_dup2(tf->tf_a0,tf->tf_a1,&retval);
+		break;
 
 	    default:
 		kprintf("Unknown syscall %d\n", callno);
