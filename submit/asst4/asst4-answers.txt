@@ -6,8 +6,9 @@
 2.What is the difference between UIO_USERISPACE and UIO_USERSPACE? When should one use UIO_SYSSPACE instead?
 
     They are flags to indicate binary data. So that kernel knows if those binary are executable instructions.
-    UIO_USERISPACE indicates that user code
+    UIO_USERISPACE indicates user code
     UIO_USERSPACE indicates user data
+    UIO_SYSSPACE indicates that data are transfering in the kernel.
 ---------------------------------------------------------------------------------------------------------
 3.Why can the struct uio that is used to read in a segment be allocated on the stack in load_segment() (i.e., where does the memory read actually go)?
 Ans:
@@ -40,7 +41,7 @@ we can use the machine dependent code to perform recovery .
 -------------------------------------------------------------------------------------------------------------
 7.What (briefly) is the purpose of userptr_t?
 Ans:
-It is the pointer indicating the address of userspace region in memory.
+It is the pointer to a one-byte struct,indicating the address of userspace region in memory.
 -------------------------------------------------------------------------------------------------------------
 8.What is the numerical value of the exception code for a MIPS system call?
 Ans:
@@ -52,8 +53,8 @@ which can be found in the src/kern/arch/mips/include/trapfram.h
 9.How many bytes is an instruction in MIPS? (Answer this by reading syscall() carefully, not by looking somewhere else.)
 Ans:
 
-The size of each syscall instruction is 4btyes.In the line 141 of syscall.c,
-we can find that epc(program counter ) increases by 4 when the syscall is done to avoid doing the syscall over and over again.
+The size of each syscall instruction is 4 btyes.
+In the line 141 of syscall.c, we can find that epc(program counter ) increases by 4 when the syscall is done to avoid doing the syscall over and over again.
 -------------------------------------------------------------------------------------------------------------
 
 10.Why do you "probably want to change" the implementation of kill_curthread()?
@@ -74,8 +75,8 @@ which will start at sp+16 for user-level stack pointer .
 12.What is the purpose of the SYSCALL macro?
 Ans:
 This is the definition for the actual syscall. 
-It fills register v0 with with the syscall code and jump to the common code at __syscall.
-
+It fills register v0 with with the syscall code. 
+The kernel will then locate the value in that register and jump to the common code at __syscall.
 -----------------------------------------------------------------------------------------------------------------
 
 13.What is the MIPS instruction that actually triggers a system call? (Answer this by reading the source in this directory, not looking somewhere else.)
@@ -113,5 +114,5 @@ And vnode was used to represent an open file.
 Ans:
 VOP_INCREF is used to increment refcount. 
 VOP_DECREF is used to decrement refcount.
-refcount is the number of threads that currently open the vnode in their filetable.
+refcount is the number of times the vode is opened in all filetables.
 --------------------------------------------------------------------------------------------------------------------------
