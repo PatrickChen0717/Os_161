@@ -94,6 +94,7 @@ SRCS.PLATFORM.sys161+=$(KTOP)/arch/sys161/main/start.S
 SRCS+=$(KTOP)/syscall/filetable.c
 SRCS+=$(KTOP)/syscall/loadelf.c
 SRCS+=$(KTOP)/syscall/openfile.c
+SRCS+=$(KTOP)/syscall/open_syscalls.c
 SRCS+=$(KTOP)/syscall/runprogram.c
 SRCS+=$(KTOP)/syscall/time_syscalls.c
 SRCS+=$(KTOP)/test/arraytest.c

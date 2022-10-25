@@ -59,6 +59,12 @@ __DEAD void enter_new_process(int argc, userptr_t argv, userptr_t env,
 int sys_reboot(int code);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 
-int sys_open(const_userptr_t path, int openflags);
+int sys_open(userptr_t path, int openflags, mode_t mode, int *ret);
+
+int sys_close(int ft_index);
+
+int sys_read(int ft_index, userptr_t buf, size_t buflen, int *ret);
+
+int sys_write(int ft_index, userptr_t buf, size_t nbytes, int *ret);
 
 #endif /* _SYSCALL_H_ */
