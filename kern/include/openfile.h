@@ -8,15 +8,15 @@
 #include <types.h>
 
 struct openfile{
-    int ref_count;
-    struct vnode *v_file;
-    int flag;
-    off_t offset;
-    struct lock *lock_file;
+    int ref_count;          /*counter of times the file is opened*/
+    struct vnode *v_file;   /*abstract representation of the open file*/
+    int flag;               /*flag that the file is opened with*/
+    off_t offset;           /*offset of the file*/
+    struct lock *lock_file; /*lock for openfile synchronization*/
 
 };
 
-struct openfile* open_make(struct vnode *,int mode );
+struct openfile* openfile_make(struct vnode *,int mode );
 
 void count_inc(struct openfile* );
 
@@ -24,7 +24,6 @@ void file_delete(struct openfile*);
 
 void count_decrea(struct openfile *);
 
-int open_new(char* path,int open_mode ,mode_t mode,struct openfile**);
-
+int open_new_file(char* path,int open_mode ,mode_t mode,struct openfile**);
 
 #endif /*_OPENFILE_H_*/

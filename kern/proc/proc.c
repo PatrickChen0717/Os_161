@@ -81,7 +81,7 @@ proc_create(const char *name)
 
 	/* VFS fields */
 	proc->p_cwd = NULL;
-
+	proc->p_ft=NULL;
 	return proc;
 }
 

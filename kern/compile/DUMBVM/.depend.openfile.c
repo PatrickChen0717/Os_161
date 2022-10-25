@@ -4,4 +4,4 @@ openfile.o: ../../syscall/openfile.c ../../include/types.h \
  opt-noasserts.h ../../include/vnode.h ../../include/spinlock.h \
  includelinks/machine/spinlock.h ../../include/openfile.h \
  ../../include/limits.h ../../include/kern/limits.h ../../include/synch.h \
- ../../include/vfs.h ../../include/array.h
+ ../../include/vfs.h ../../include/array.h ../../include/kern/errno.h

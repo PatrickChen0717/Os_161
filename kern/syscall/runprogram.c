@@ -76,13 +76,11 @@ runprogram(char *progname)
 		return ENOMEM;
 	}
 
-	if (curproc->p_ft == NULL) {
-		curproc->p_ft = filetable_create();
-	}
-
 	/* Switch to it and activate it. */
 	proc_setas(as);
 	as_activate();
+
+	
 
 	/* Load the executable. */
 	result = load_elf(v, &entrypoint);
@@ -92,6 +90,9 @@ runprogram(char *progname)
 		return result;
 	}
 
+	if (curproc->p_ft == NULL) {
+		curproc->p_ft = filetable_create();
+	}
 	/* Done with the file now. */
 	vfs_close(v);
 

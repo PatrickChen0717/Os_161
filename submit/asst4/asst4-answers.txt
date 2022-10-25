@@ -1,5 +1,5 @@
 1.What are the ELF magic numbers?
-
+    0x7F followed by  'ELF'
     It is the starting binary of an ELF executable.
     It's used to indicate the binary is well-formed. So that exec function can execute the binary instructions.
 
@@ -8,36 +8,84 @@
     They are flags to indicate binary data. So that kernel knows if those binary are executable instructions.
     UIO_USERISPACE indicates that user code
     UIO_USERSPACE indicates user data
-
+---------------------------------------------------------------------------------------------------------
 3.Why can the struct uio that is used to read in a segment be allocated on the stack in load_segment() (i.e., where does the memory read actually go)?
-
-
+Ans:
+since the uio is a tool used to transfer the data and code ,the actual read will go to the virtual address (vaddr in that function). 
+So it is not important the uio is on the stack.
+---------------------------------------------------------------------------------------------------------
 
 4.In runprogram(), why is it important to call vfs_close() before going to usermode?
-
-
-If vfs_close() is not called, the process will hold that file, so that the later process can not open that file again. 
-If vfs_close() is not called, keeps opening files without closing them, the file table will run out of available entries. So that no more file can be opened eventually.
+Ans:
+If vfs_close() is not called, and keeps opening files without closing them, the file table will run out of available entries. 
+So that no more files can be opened eventually. This is a waste of memory resource.
+----------------------------------------------------------------------------------------------------------
 
 5.What function forces the processor to switch into usermode? Is this function machine dependent?
+Ans:
+enter_new_process(which is in the syscall.h file)is the function that force the processor to switch to the user mode,and in the enter_new_process function ,
+mis_usermode() was call and which will call a function called asm_usermode() which is write in the assembly code.
+-----------------------------------------------------------------------------------------------------------
 
 6.In what file are copyin and copyout defined? memmove? Why can't copyin and copyout be implemented as simply as memmove?
+Ans:
+copyinout are defined in the src/kern/vm
+memmove are defined in the src/common/libc/string 
 
+we can not simply use memmove for the copyin and copyout , because when the kernel try to copy the arguments provided by the user
+it has to check to make sure the address provide by the user has to be a valid address in the userland.
+And the copyin and copy out are machine dependent code during the copyin and copyout process, when there is fatal fault occur, 
+we can use the machine dependent code to perform recovery .
+
+-------------------------------------------------------------------------------------------------------------
 7.What (briefly) is the purpose of userptr_t?
-
+Ans:
+It is the pointer indicating the address of userspace region in memory.
+-------------------------------------------------------------------------------------------------------------
 8.What is the numerical value of the exception code for a MIPS system call?
+Ans:
+the numerical value of system call is 8,
+which can be found in the src/kern/arch/mips/include/trapfram.h
+
+-------------------------------------------------------------------------------------------------------------
 
 9.How many bytes is an instruction in MIPS? (Answer this by reading syscall() carefully, not by looking somewhere else.)
+Ans:
+
+The size of each syscall instruction is 4btyes.In the line 141 of syscall.c,
+we can find that epc(program counter ) increases by 4 when the syscall is done to avoid doing the syscall over and over again.
+-------------------------------------------------------------------------------------------------------------
 
 10.Why do you "probably want to change" the implementation of kill_curthread()?
+Ans:
+
+When user code runs into fatal faults, we don’t want the kernel to panic and pause. Then the os will be stuck at that fault.
+Instead, the kernel should continue to properly handle that error by killing the fatal thread, which is not implemented in current kill_curthread().
+-------------------------------------------------------------------------------------------------------------
 
 11.What would be required to implement a system call that took more than 4 arguments?
 
-12.What is the purpose of the SYSCALL macro?
+Ans:
+We need the user-level stack pointer and we can use copy in to fetch the arguments,
+which will start at sp+16 for user-level stack pointer .
+-------------------------------------------------------------------------------------------------------------
 
+
+12.What is the purpose of the SYSCALL macro?
+Ans:
+This is the definition for the actual syscall. 
 It fills register v0 with with the syscall code and jump to the common code at __syscall.
 
+-----------------------------------------------------------------------------------------------------------------
+
 13.What is the MIPS instruction that actually triggers a system call? (Answer this by reading the source in this directory, not looking somewhere else.)
+
+Ans:
+
+line 84 in syscalls-mips.S
+	   syscall              /* make system call */
+-----------------------------------------------------------------------------------------------------------------
+
 
 14.After reading syscalls-mips.S and syscall.c, you should be prepared to answer the following question: 
 OS/161 supports 64-bit values; lseek() takes and returns a 64-bit offset value. 
@@ -45,9 +93,25 @@ Thus, lseek() takes a 32-bit file handle (arg0), a 64-bit offset (arg1), a 32-bi
 In void syscall(struct trapframe *tf) where will you find each of the three arguments (in which registers) and how will you return the 64-bit offset?
 
 
+32-bit file is on the a0 register.And 64-bits offset is on the a2 and a3 registers . 
+And the 32-bits whence is on the sp+16
+And the return value of 64-bits will be in the v0 and v1 register.
+
+--------------------------------------------------------------------------------------------------------------------------
 15.As you were reading the code in runprogram.c and loadelf.c, you probably noticed how the kernel manipulates the files. 
 Which kernel function is called to open a file? 
 Which macro is called to read the file? What about to write a file? 
 Which data structure is used in the kernel to represent an open file? 
 
+Ans:
+vfs_open() was called to open a file.
+VOP_RADE was called to read the file
+VOP_WRITE was used to write the file.a
+And vnode was used to represent an open file.
+--------------------------------------------------------------------------------------------------------------------------
 16.What is the purpose of VOP_INCREF and VOP_DECREF?
+Ans:
+VOP_INCREF is used to increment refcount. 
+VOP_DECREF is used to decrement refcount.
+refcount is the number of threads that currently open the vnode in their filetable.
+--------------------------------------------------------------------------------------------------------------------------
