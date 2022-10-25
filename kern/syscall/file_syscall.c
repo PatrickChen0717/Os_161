@@ -29,7 +29,15 @@ sys_open(const_userptr_t userpath, int openflags,mode_t mode,int *retv){
     int err;
     char *path;
     struct openfile *file;
-    const int setflag = O_ACCMODE | O_CREAT | O_EXCL | O_TRUNC | O_APPEND | O_NOCTTY;   // bit wise or  all the possible check flags 
+
+    /* Setflag to 127 because in the kern/fcntl.h we found that
+     * flag for open can be 0 1 or 2 and bit wise or with any of the 
+     * O_CREAT, O_EXCL ,O_TRUNC,O_APPEND ,O_NOCTTY , or bit wise OR with
+     * them all together (equivalent to O_ACCMODE | O_CREAT | O_EXCL | 
+     * O_TRUNC | O_APPEND | O_NOCTTY) which can check the input flag whether 
+     * is in range. 
+     */
+    const int setflag = 127; 
     path = kmalloc(PATH_MAX);
 
     //err check Out of memory
@@ -38,7 +46,7 @@ sys_open(const_userptr_t userpath, int openflags,mode_t mode,int *retv){
     }
 
     //check whether the flag is valid, also can check is the flag is something larger than 127 or negative value 
-    if((openflags & setflag)!=openflags ){
+    if(openflags > setflag || openflags < 0){
       kfree(path);
       *retv=-1;
       return EINVAL;
