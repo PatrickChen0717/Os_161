@@ -182,6 +182,7 @@ proc_bootstrap(void)
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
 	}
+	kproc->p_pid = 1;//assign the kenerl pid 
 }
 
 /*

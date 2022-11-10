@@ -132,7 +132,7 @@ syscall(struct trapframe *tf)
 		
 		case SYS_lseek:
 		/* the pos off_t is 64 bit long accross a2 and a3, so we need to join them
-		 * whence argument is stored on stack, so we need to memcopy it into kernel
+		 * whence argument is stored on stack, so we need to copyin it into kernel
 		 */
 		join32to64(tf->tf_a2,tf->tf_a3,&conc);
 		err=copyin((userptr_t)tf->tf_sp+16,&whence,sizeof(int));

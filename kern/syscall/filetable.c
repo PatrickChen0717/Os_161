@@ -128,3 +128,14 @@ filetable_remove (struct filetable *ft, int index){
     //return 1, for no file to remove
     return 1;
 }
+
+
+int
+filetable_copy (struct filetable * ft_old, struct filetable * ft_new){
+    for(int i=3; i<OPEN_MAX; i++){
+        ft_new->table[i] = ft_old->table[i];
+        ft_new->table[i].ref_count++;
+    }
+
+    return 0;
+}
