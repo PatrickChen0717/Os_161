@@ -92,7 +92,7 @@ proctable_add (int *retval)
         next_pid=PID_MIN;
     }
     for(int i=next_pid;i<PID_MAX+1;i++){
-        if(proctable[i]!=NULL){
+        if(proctable[i]==NULL){
                 next_pid=i;
                 break;
         }
