@@ -6,6 +6,7 @@
 #include <proctable.h>
 #include <kern/fcntl.h>
 #include <kern/errno.h>
+#include <current.h>
 
 /*
  * create an empty filetable with OPEN_MAX entries
@@ -18,10 +19,10 @@ int cur_procnum;
 pid_t next_pid; //do not need to search the whole array to find next avalibale 
 
 void
-proctable_create (void){
+proctable_init (void)
+{
     struct procinfo* kenerl_proc;
     
-
     //create the proctable lock
     proctable_lock = lock_create("pt_lock");
     if(proctable_lock==NULL){
@@ -33,30 +34,41 @@ proctable_create (void){
     }
 
     //set the proc_table[1] to be the kernel process 
-    kenerl_proc=procinfo_create(curproc);
+    kenerl_proc=procinfo_create(1,0);
     if(kenerl_proc==NULL){
+        kfree(proctable_lock);
         panic("Creating the kenerl procinfo failed");
     }
     proc_table[1]=kenerl_proc;
-    curproc->p_pid=1; //the kenerl has the pid1
     cur_procnum=1; //number of the process is 1 we only create the kenerl process 
     next_pid=PID_MIN; //the next pid will start at PID_MIN which is 2
 }
 
-void 
-proctable_delete (void){
-    for(int i=0; i<PID_MAX; i++){
-        //remove reference
-        proc_table[i] = NULL;
-    }
+struct procinfo* 
+procinfo_create(pid_t pid,pid_t p_pid)
+{
 
-    //free memory
-    lock_destroy(proctable_lock);
-    kfree(proc_table);
-}
+    struct procinfo* new_p;
+
+    new_p=kmalloc(sizeof(struct procinfo));
+    if(new_p==NULL){
+        return NULL;
+    }
+    //create cv
+    new_p->proc_cv = cv_create("proc_cv");
+    if(new_p->proc_cv==NULL){
+        kfree(new_p);
+        return NULL;
+    }
+    new_p->pid=pid;
+    new_p->p_pid=p_pid;
+    return new_p;
+
+ }
 
 int 
-proctable_add (struct proc *kproc,pid_t *retval){
+proctable_add (int *retval)
+{
     struct procinfo* new_proc;
     lock_acquire(proctable_lock);
 
@@ -64,7 +76,7 @@ proctable_add (struct proc *kproc,pid_t *retval){
         lock_release(proctable_lock);
         return ENPROC;
     }
-    new_proc=procinfo_create(kproc);
+    new_proc=procinfo_create(next_pid,curproc->pid);
 
     if(new_proc==NULL){
         lock_release(proctable_lock);
@@ -72,41 +84,30 @@ proctable_add (struct proc *kproc,pid_t *retval){
     }
 
     proc_table[next_pid]=new_proc;
-    kproc->p_pid=next_pid;
-    &retval=next_pid;
+    cur_procnum++;
 
-    next_pid=next_pid+1;//increase the next_pid 
+    *retval=next_pid;
+
+    if(next_pid==PID_MAX){
+        next_pid=PID_MIN;
+    }
+    for(int i=next_pid;i<PID_MAX+1;i++){
+        if(proctable[i]!=NULL){
+                next_pid=i;
+                break;
+        }
+    }
     lock_release(proctable_lock);
     return 0;
 }
 
-int 
-proctable_remove (struct proc *kproc_to_delete){
-     //check if fd is valid
-    for(int i=0;i<PID_MAX;i++){
-        //check if the filetable index is empty
-        if(proc_table[i]->kproc == kproc_to_delete){
-            proc_table[i] = NULL;
-            return 0;
-        }
-    }
-
-    //return 1, for no file to remove
-    return 1;
+void
+proctable_free(struct procinfo*proc)
+{
+    KASSERT(proc!=NULL);
+    cv_destroy(proc->proc_cv);
+    proctable[proc->pid]=NULL;
+    kfree(proc);
+    
 }
 
-struct procinfo * procinfo_create(struct proc* new_proc){
-    KASSERT(new_proc!=NULL);
-    struct procinfo* new_p;
-    new_p=kmalloc(sizeof(struct procinfo));
-    if(new_p==NULL){
-        return NULL;
-    }
-    new_p->kproc=new_proc;
-    
-    //create cv
-    new_p->proc_cv = cv_create("proc_cv");
-
-    return new_p;
-
- }
