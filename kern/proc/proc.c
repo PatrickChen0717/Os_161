@@ -182,7 +182,7 @@ proc_bootstrap(void)
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
 	}
-	kproc->p_pid = 1;//assign the kenerl pid 
+	kproc->pid = 1;//assign the kenerl pid 
 }
 
 /*
@@ -329,4 +329,11 @@ proc_setas(struct addrspace *newas)
 	proc->p_addrspace = newas;
 	spinlock_release(&proc->p_lock);
 	return oldas;
+}
+struct proc*
+proc_create_new(const char * name)
+{
+	struct proc *new_proc;
+	new_proc=proc_create(name);
+	return new_proc;
 }

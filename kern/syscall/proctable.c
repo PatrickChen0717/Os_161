@@ -13,8 +13,6 @@
  */
 
 
-struct procinfo * proc_table[PID_MAX+1];
-struct lock* proctable_lock;
 int cur_procnum;
 pid_t next_pid; //do not need to search the whole array to find next avalibale 
 
@@ -62,6 +60,7 @@ procinfo_create(pid_t pid,pid_t p_pid)
     }
     new_p->pid=pid;
     new_p->p_pid=p_pid;
+    new_p->proc_status=Ready;
     return new_p;
 
  }
@@ -92,7 +91,7 @@ proctable_add (int *retval)
         next_pid=PID_MIN;
     }
     for(int i=next_pid;i<PID_MAX+1;i++){
-        if(proctable[i]!=NULL){
+        if(proc_table[i]==NULL){
                 next_pid=i;
                 break;
         }
@@ -101,12 +100,21 @@ proctable_add (int *retval)
     return 0;
 }
 
+
+void
+proctable_remove(pid_t pid)
+{
+    KASSERT(pid!=1);
+    KASSERT(pid!=0);
+    proctable_free(proc_table[pid]);
+
+}
 void
 proctable_free(struct procinfo*proc)
 {
     KASSERT(proc!=NULL);
     cv_destroy(proc->proc_cv);
-    proctable[proc->pid]=NULL;
+    proc_table[proc->pid]=NULL;
     kfree(proc);
     
 }

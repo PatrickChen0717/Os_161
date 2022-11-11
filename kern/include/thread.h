@@ -169,4 +169,10 @@ void schedule(void);
 void thread_consider_migration(void);
 
 
+/*
+ *New version of thread_exit,which removes the 
+ *proc_remthread(cur); we already remove  the thread  
+ *int the exit function before we call the thread_exit
+ */
+void thread_exit_new(void);
 #endif /* _THREAD_H_ */

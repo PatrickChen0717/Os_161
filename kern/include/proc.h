@@ -88,6 +88,7 @@ struct addrspace *proc_getas(void);
 
 /* Change the address space of the current process, and return the old one. */
 struct addrspace *proc_setas(struct addrspace *);
-
+/*a wrapper of proc_create*/
+struct proc* proc_create_new(const char *name);
 
 #endif /* _PROC_H_ */

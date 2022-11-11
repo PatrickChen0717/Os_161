@@ -27,6 +27,6 @@ int filetable_add (struct filetable *ft, struct openfile *file);
 /*remove an existing file in the filetable*/
 int filetable_remove (struct filetable *ft, int index);
 
-int filetable_copy (struct filetable * ft_old, struct filetable * ft_new);
+int filetable_copy (struct filetable * ft_old, struct filetable ** ft_new);
 
 #endif /*_FILETABLE_H_*/

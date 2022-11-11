@@ -5,4 +5,4 @@ filetable.o: ../../syscall/filetable.c ../../include/types.h \
  ../../include/synch.h ../../include/spinlock.h \
  includelinks/machine/spinlock.h ../../include/vnode.h \
  ../../include/filetable.h ../../include/openfile.h \
- ../../include/kern/fcntl.h
+ ../../include/kern/fcntl.h ../../include/kern/errno.h
