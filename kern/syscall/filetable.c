@@ -5,6 +5,8 @@
 #include <vnode.h>
 #include <filetable.h>
 #include <kern/fcntl.h>
+#include <kern/errno.h>
+
 
 
 /*
@@ -131,11 +133,25 @@ filetable_remove (struct filetable *ft, int index){
 
 
 int
-filetable_copy (struct filetable * ft_old, struct filetable * ft_new){
-    for(int i=3; i<OPEN_MAX; i++){
-        ft_new->table[i] = ft_old->table[i];
-        ft_new->table[i].ref_count++;
+filetable_copy (struct filetable * ft_old, struct filetable ** ft_new){
+    struct filetable* dest;
+
+    if(ft_old==NULL){
+        *ft_new=NULL;
+        return 0;
     }
+    dest=filetable_create();
+    if(dest==NULL){
+        return ENOMEM;
+    }
+    
+    for(int i=3; i<OPEN_MAX; i++){
+        if(ft_old->table[i]!=NULL){
+            dest->table[i]=ft_old->table[i];
+            count_inc(ft_old->table[i]);
+        }
+    }
+    *ft_new=dest;
 
     return 0;
 }

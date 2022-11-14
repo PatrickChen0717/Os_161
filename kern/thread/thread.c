@@ -1218,3 +1218,22 @@ interprocessor_interrupt(void)
 	curcpu->c_ipi_pending = 0;
 	spinlock_release(&curcpu->c_ipi_lock);
 }
+void
+thread_exit_new(void)
+{
+	struct thread *cur;
+
+	cur = curthread;
+
+
+	/* Make sure we *are* detached (move this only if you're sure!) */
+	KASSERT(cur->t_proc == NULL);
+
+	/* Check the stack guard band. */
+	thread_checkstack(cur);
+
+	/* Interrupts off on this processor */
+        splhigh();
+	thread_switch(S_ZOMBIE, NULL, NULL);
+	panic("braaaaaaaiiiiiiiiiiinssssss\n");
+}

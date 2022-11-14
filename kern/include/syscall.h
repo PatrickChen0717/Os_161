@@ -68,4 +68,12 @@ int sys_chdir(const_userptr_t pathname);
 int sys__getcwd(const_userptr_t buf, size_t buflen, int *retval);
 int sys_dup2(int oldfd,int newfd,int *retval);
 
+int sys_getpid(pid_t *retval);
+int sys_fork(struct trapframe *tf, pid_t *retval);
+int sys_waitpid(pid_t pid,userptr_t status, int options, pid_t *retval);
+void sys__exit(int exitcode);
+int sys_execv(userptr_t name,userptr_t args);
+
+void switch_usermode(void *p, unsigned long arg);
+
 #endif /* _SYSCALL_H_ */

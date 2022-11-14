@@ -48,6 +48,8 @@
 #include <current.h>
 #include <addrspace.h>
 #include <vnode.h>
+#include <proctable.h>
+#include <kern/errno.h>
 
 /*
  * The process for the kernel; this holds all the kernel-only threads.
@@ -182,7 +184,7 @@ proc_bootstrap(void)
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
 	}
-	kproc->p_pid = 1;//assign the kenerl pid 
+	kproc->pid = 1;//assign the kenerl pid 
 }
 
 /*
@@ -191,16 +193,24 @@ proc_bootstrap(void)
  * It will have no address space and will inherit the current
  * process's (that is, the kernel menu's) current directory.
  */
-struct proc *
-proc_create_runprogram(const char *name)
+int
+proc_create_runprogram(const char *name,struct proc **new_proc)
 {
+	int err;
 	struct proc *newproc;
 
 	newproc = proc_create(name);
 	if (newproc == NULL) {
-		return NULL;
+		return ENOMEM;
 	}
-
+	
+	//Add proc into proctable
+	err=proctable_add(&(newproc->pid));
+	if(err){
+		proc_destroy(newproc);
+		return err;
+	}
+	
 	/* VM fields */
 
 	newproc->p_addrspace = NULL;
@@ -219,7 +229,9 @@ proc_create_runprogram(const char *name)
 	}
 	spinlock_release(&curproc->p_lock);
 
-	return newproc;
+	*new_proc=newproc;
+
+	return 0;
 }
 
 /*
@@ -329,4 +341,12 @@ proc_setas(struct addrspace *newas)
 	proc->p_addrspace = newas;
 	spinlock_release(&proc->p_lock);
 	return oldas;
+}
+
+struct proc*
+proc_create_new(const char * name)
+{
+	struct proc *new_proc;
+	new_proc=proc_create(name);
+	return new_proc;
 }

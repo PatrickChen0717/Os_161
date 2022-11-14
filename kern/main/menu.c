@@ -115,18 +115,15 @@ common_prog(int nargs, char **args)
 {
 	struct proc *proc;
 	int result;
-
-#if OPT_SYNCHPROBS
-	kprintf("Warning: this probably won't work with a "
-		"synchronization-problems kernel.\n");
-#endif
+	int ret;
+	pid_t pid;
 
 	/* Create a process for the new program to run in. */
-	proc = proc_create_runprogram(args[0] /* name */);
-	if (proc == NULL) {
-		return ENOMEM;
+	result = proc_create_runprogram(args[0] /* name */,&proc);
+	if (result) {
+		return result;
 	}
-
+	pid=proc->pid;
 	result = thread_fork(args[0] /* thread name */,
 			proc /* new process */,
 			cmd_progthread /* thread function */,
@@ -141,6 +138,7 @@ common_prog(int nargs, char **args)
 	 * The new process will be destroyed when the program exits...
 	 * once you write the code for handling that.
 	 */
+	sys_waitpid(pid,NULL,0,&ret);
 
 	return 0;
 }
@@ -725,8 +723,6 @@ menu(char *args)
 		kprintf("OS/161 kernel [? for menu]: ");
 		kgets(buf, sizeof(buf));
 		menu_execute(buf, 0);
-		while(true){
-			
-		}
+
 	}
 }

@@ -37,8 +37,10 @@
 #include <thread.h>
 #include <current.h>
 #include <vm.h>
+#include <kern/wait.h>
 #include <mainbus.h>
-#include <syscall.h>
+#include <syscall.h> 
+#include <proctable.h>
 
 
 /* in exception-*.S */
@@ -114,7 +116,8 @@ kill_curthread(vaddr_t epc, unsigned code, vaddr_t vaddr)
 
 	kprintf("Fatal user mode trap %u sig %d (%s, epc 0x%x, vaddr 0x%x)\n",
 		code, sig, trapcodenames[code], epc, vaddr);
-	panic("I don't know how to handle this\n");
+	//no more panic, just exit the process 
+	proctable_exit(curproc,_MKWAIT_SIG(sig));
 }
 
 /*

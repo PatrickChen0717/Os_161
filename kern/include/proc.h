@@ -72,7 +72,7 @@ extern struct proc *kproc;
 void proc_bootstrap(void);
 
 /* Create a fresh process for use by runprogram(). */
-struct proc *proc_create_runprogram(const char *name);
+int proc_create_runprogram(const char *name,struct proc** new_proc);
 
 /* Destroy a process. */
 void proc_destroy(struct proc *proc);
@@ -88,6 +88,8 @@ struct addrspace *proc_getas(void);
 
 /* Change the address space of the current process, and return the old one. */
 struct addrspace *proc_setas(struct addrspace *);
+/*a wrapper of proc_create*/
+struct proc* proc_create_new(const char *name);
 
 
 #endif /* _PROC_H_ */
