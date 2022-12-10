@@ -32,34 +32,31 @@ static int ram_mu_boost = 0;
 
 void ram_manage_init(void)
 {
+        //calculate how many pages we have in total
         unsigned long total_size = ram_getsize();
-        total_pages= total_size / 4096; 
+        total_pages= total_size / PAGE_SIZE; 
 
-        
-        
         ram_mu = kmalloc(total_pages * sizeof(struct ram_chunk));
 
-        long after = ram_getfirstfree()/4096;
+        long after = ram_getfirstfree()/PAGE_SIZE;
 
         spinlock_acquire(&ram_mu_lock);
+        //mark all the pages before we malloc our ram_mu as not free
         for( long i = 0; i<after+1; i++){
                 ram_mu[i].free = 0;
                 ram_mu[i].size = 0;
-                ram_mu[i].virtual_addr = 0;
-                ram_mu[i].as = NULL;
         }
+        //mark all the pages after we malloc our ram_mu as free
         for(long i = after+1;i<total_pages;i++){
                 ram_mu[i].free = 1;
                 ram_mu[i].size = 0;
-                ram_mu[i].virtual_addr = 0;
-                ram_mu[i].as = NULL;
         }
         
         ram_mu_boost = 1;
         spinlock_release(&ram_mu_lock);
 
 }
-/*when the kernel called kmalloc we first try to find some 
+/*when the kernel called kmalloc we  try to find some 
  *free pages that managemend by our  ram management array.
  */
 static paddr_t k_try_free_pages(unsigned long npages)
@@ -71,9 +68,11 @@ static paddr_t k_try_free_pages(unsigned long npages)
                 spinlock_acquire(&ram_mu_lock);
                 for( long i=0;i<total_pages;i++){
                         if(ram_mu[i].free){
-                                
                                 free_counter = free_counter +1;
-                                
+                                /*we need to find the  npages continuous
+                                 *free pages.The if below check whether we 
+                                 *can find n continuous pages.
+                                 */
                                 if(i!=0){
                                         if(!ram_mu[i-1].free){
                                                 free_counter = 1;
@@ -81,7 +80,8 @@ static paddr_t k_try_free_pages(unsigned long npages)
                                 }
                                 if(free_counter == npages){
                                         start_index=i-npages+1;
-                                        addr = (paddr_t) (start_index*4096);
+                                        //calculate the physical address
+                                        addr = (paddr_t) (start_index*PAGE_SIZE);
                                         break;
                                 } 
                         }         
@@ -92,7 +92,6 @@ static paddr_t k_try_free_pages(unsigned long npages)
                                 ram_mu[i].free = 0;
                         }
                         ram_mu[start_index].size = npages;
-                        ram_mu[start_index].virtual_addr = PADDR_TO_KVADDR(addr);
 
                 }
                 spinlock_release(&ram_mu_lock);
@@ -106,10 +105,13 @@ vaddr_t alloc_ker_pages(unsigned long npages)
 {
         paddr_t paddr = 0;
         unsigned long pages= npages;
-
+        //try get the free pages 
         paddr = k_try_free_pages(pages);
-        //we do not find any free pages that are managemend 
-        //by the ram_mu, so we just call steal the memory from the ram 
+        /* if we can not find the free pages  and if we have not set up the ram management unit yet
+         * we have to call stealmem to get the memory.If we already set up our ram management unit
+         * we can not call the steal mem to get memory anymore ,cause we call the ram_getfirstfree()
+         * when we set up our ram management unit
+         */
         if(paddr == 0){
                 if(ram_mu_boost==0){
                                 spinlock_acquire(&stealmem_lock);
@@ -129,13 +131,15 @@ void free_ker_pages(vaddr_t addr)
         //PADDR_TO_KVADDR(paddr) ((paddr)+MIPS_KSEG0)
         //we transfer the kernel virtual address  to the physical address 
         paddr_t paddr = addr - MIPS_KSEG0;
+        //if we have setup the ram management unit we need to mark the page to be free in out ram_mu
+        //otherwise we do not have to do so
         if(ram_mu_boost){
-                long start_index  =  paddr / 4096;
+                //get the start index in our ram_mu
+                long start_index  =  paddr / PAGE_SIZE;
                 long length = ram_mu[start_index].size;
                 spinlock_acquire(&ram_mu_lock);
+                //mark them to be free
                 for(long i= start_index; i < length+start_index; i++){
-                        ram_mu[i].as = NULL;
-                        ram_mu[i].virtual_addr = 0;
                         ram_mu[i].free = 1;
                 }
                 ram_mu[start_index].size = 0;

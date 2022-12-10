@@ -96,7 +96,6 @@ boot(void)
 	 * anything at all. You can make it larger though (it's in
 	 * dev/generic/console.c).
 	 */
-
 	kprintf("\n");
 	kprintf("OS/161 base system version %s\n", BASE_VERSION);
 	kprintf("%s", harvard_copyright);
@@ -125,17 +124,18 @@ boot(void)
 	kheap_nextgeneration();
 
 	/* Late phase of initialization. */
-	vm_bootstrap();
+	
 	kprintf_bootstrap();
 	thread_start_cpus();
-
-	/*initialize protable*/
 	proctable_init();
+	vm_bootstrap();
+
 
 	/* Default bootfs - but ignore failure, in case emu0 doesn't exist */
 	vfs_setbootfs("emu0");
 
 	kheap_nextgeneration();
+	
 
 	/*
 	 * Make sure various things aren't screwed up.
