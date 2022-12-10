@@ -336,8 +336,10 @@ file      proc/proc.c
 # Virtual memory system
 # (you will probably want to add stuff here while doing the VM assignment)
 #
-
+file      vm/vm.c
 file      vm/kmalloc.c
+file      vm/ram_manage.c
+
 
 optofffile dumbvm   vm/addrspace.c
 
